@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEET Quiz – Reproduction in Flowering Plants</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080d1a;--card:#0f1829;--card2:#141f35;--border:#1a2a42;--accent:#00e5a0;--accent2:#ff6b6b;--accent3:#ffd166;--accent4:#818cf8;--text:#e2e8f4;--muted:#5a7094;--correct:#00e5a0;--wrong:#ff6b6b}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh}
+
+/* WELCOME SCREEN */
+#nq-welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;text-align:center;background:radial-gradient(ellipse at 50% 0%,rgba(0,229,160,0.08) 0%,transparent 60%)}
+.nq-logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,10vw,64px);letter-spacing:3px;color:#fff;line-height:1}
+.nq-logo span{color:var(--accent)}
+.nq-tagline{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;margin:10px 0 36px}
+.nq-welcome-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px 28px;max-width:440px;width:100%}
+.nq-welcome-card h2{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--accent);margin-bottom:8px}
+.nq-welcome-card p{font-size:13px;color:var(--muted);margin-bottom:24px;line-height:1.6}
+.nq-input-wrap{position:relative;margin-bottom:20px}
+.nq-input-wrap label{display:block;font-size:11px;font-family:'DM Mono',monospace;color:var(--accent);letter-spacing:2px;margin-bottom:8px;text-transform:uppercase}
+.nq-input{width:100%;background:#0a1020;border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:15px;color:var(--text);font-family:'DM Sans',sans-serif;outline:none;transition:border-color .2s}
+.nq-input:focus{border-color:var(--accent)}
+.nq-input::placeholder{color:var(--muted)}
+.nq-btn-start{width:100%;background:linear-gradient(135deg,var(--accent),#00b37a);color:#000;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;padding:16px;border-radius:50px;border:none;cursor:pointer;transition:transform .2s,opacity .2s}
+.nq-btn-start:hover{transform:scale(1.02);opacity:.92}
+.nq-returning{margin-top:16px;font-size:12px;color:var(--muted)}
+.nq-returning span{color:var(--accent);cursor:pointer;text-decoration:underline}
+.nq-stats-preview{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:20px 0}
+.nq-sp-item{background:#0a1020;border:1px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center}
+.nq-sp-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent)}
+.nq-sp-lbl{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:1px}
+
+/* QUIZ SCREEN */
+#nq-quiz{display:none}
+.nq-topbar{background:var(--card);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+.nq-tb-name{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--accent)}
+.nq-tb-progress{flex:1;height:4px;background:var(--border);border-radius:4px;overflow:hidden}
+.nq-tb-fill{height:100%;background:linear-gradient(90deg,var(--accent),#00b37a);border-radius:4px;transition:width .4s ease;width:0%}
+.nq-tb-count{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);white-space:nowrap}
+
+.nq-quiz-header{background:linear-gradient(135deg,#0d1b35,#061020);border-bottom:1px solid var(--border);padding:20px 20px 16px}
+.nq-quiz-header h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(20px,5vw,32px);letter-spacing:2px;color:#fff}
+.nq-quiz-header h1 span{color:var(--accent)}
+.nq-quiz-sub{font-size:12px;color:var(--muted);margin-top:4px;font-family:'DM Mono',monospace;letter-spacing:1px}
+.nq-marking-bar{display:flex;gap:16px;padding:10px 20px;background:var(--card);border-bottom:1px solid var(--border)}
+.nq-mk{font-size:12px;font-family:'DM Mono',monospace;display:flex;align-items:center;gap:5px}
+.nq-mk-dot{width:8px;height:8px;border-radius:50%}
+
+.nq-main{padding:16px 16px 100px;max-width:760px;margin:0 auto}
+
+/* QUESTION CARD */
+.nq-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px 18px 18px;margin-bottom:12px;position:relative;overflow:hidden;transition:border-color .3s}
+.nq-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),transparent);opacity:0;transition:opacity .3s}
+.nq-card.nq-correct{border-color:var(--correct)}
+.nq-card.nq-correct::before{opacity:1;background:linear-gradient(90deg,var(--correct),transparent)}
+.nq-card.nq-wrong{border-color:var(--wrong)}
+.nq-card.nq-wrong::before{opacity:1;background:linear-gradient(90deg,var(--wrong),transparent)}
+.nq-meta{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.nq-qnum{font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--accent);letter-spacing:2px}
+.nq-tag{font-size:10px;font-family:'DM Mono',monospace;padding:3px 9px;border-radius:20px;letter-spacing:1px;border:1px solid}
+.nq-tag-pyq{color:var(--accent3);border-color:var(--accent3);background:rgba(255,209,102,.08)}
+.nq-tag-concept{color:var(--accent4);border-color:var(--accent4);background:rgba(129,140,248,.08)}
+.nq-tag-applied{color:#60a5fa;border-color:#60a5fa;background:rgba(96,165,250,.08)}
+.nq-tag-tricky{color:var(--accent2);border-color:var(--accent2);background:rgba(255,107,107,.08)}
+.nq-qtext{font-size:15px;line-height:1.65;font-weight:500;margin-bottom:14px;display:block}
+.nq-options{display:flex;flex-direction:column;gap:8px}
+.nq-opt{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;border-radius:9px;border:1px solid var(--border);cursor:pointer;background:rgba(255,255,255,.02);font-size:14px;line-height:1.5;text-align:left;width:100%;color:var(--text);font-family:'DM Sans',sans-serif;transition:border-color .18s,background .18s}
+.nq-opt:hover:not([disabled]){border-color:var(--accent);background:rgba(0,229,160,.05)}
+.nq-opt[disabled]{cursor:default}
+.nq-optkey{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;color:var(--muted);min-width:18px;flex-shrink:0;padding-top:1px}
+.nq-opt.nq-opt-correct{border-color:var(--correct)!important;background:rgba(0,229,160,.1)!important;color:var(--correct)!important}
+.nq-opt.nq-opt-correct .nq-optkey{color:var(--correct)}
+.nq-opt.nq-opt-wrong{border-color:var(--wrong)!important;background:rgba(255,107,107,.1)!important;color:var(--wrong)!important}
+.nq-opt.nq-opt-wrong .nq-optkey{color:var(--wrong)}
+.nq-exp{margin-top:12px;padding:12px 14px;background:rgba(0,229,160,.06);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;font-size:13px;line-height:1.6;color:#a8d8c8;display:none}
+.nq-exp.nq-show{display:block}
+.nq-exp strong{color:var(--accent)}
+
+/* FLOATING SUBMIT */
+.nq-submit-float{position:fixed;bottom:0;left:0;right:0;background:rgba(8,13,26,.95);backdrop-filter:blur(12px);border-top:1px solid var(--border);padding:16px 20px;display:none;z-index:200}
+.nq-submit-float.nq-vis{display:block}
+.nq-submit-inner{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:16px}
+.nq-live-score{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--accent);white-space:nowrap}
+.nq-btn-submit{flex:1;background:linear-gradient(135deg,var(--accent),#00b37a);color:#000;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;padding:14px;border-radius:50px;border:none;cursor:pointer;transition:transform .2s}
+.nq-btn-submit:hover{transform:scale(1.02)}
+.nq-mk-note{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;text-align:center;margin-top:6px;max-width:760px;margin-left:auto;margin-right:auto}
+
+/* RESULT SCREEN */
+#nq-result{display:none;padding:20px 16px 60px;max-width:760px;margin:0 auto}
+.nq-result-hero{background:linear-gradient(135deg,#0d1b35,#061020);border:1px solid var(--border);border-radius:20px;padding:36px 24px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden}
+.nq-result-hero::before{content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:300px;height:300px;background:radial-gradient(circle,rgba(0,229,160,.15) 0%,transparent 70%);border-radius:50%;pointer-events:none}
+.nq-res-greeting{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px}
+.nq-res-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,7vw,48px);letter-spacing:2px;color:#fff;margin-bottom:20px}
+.nq-res-score{font-family:'Bebas Neue',sans-serif;font-size:clamp(64px,18vw,96px);letter-spacing:-2px;line-height:1;color:var(--accent)}
+.nq-res-outof{font-size:13px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:2px;margin-bottom:24px}
+.nq-res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.nq-res-item{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px 8px}
+.nq-res-val{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:1px;display:block}
+.nq-res-lbl{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;letter-spacing:1px}
+.nq-vc{color:var(--correct)}
+.nq-vw{color:var(--wrong)}
+.nq-vs{color:var(--accent3)}
+.nq-accuracy{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);letter-spacing:1px}
+
+/* SHARE CARD */
+.nq-share-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px}
+.nq-section-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--accent);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.nq-share-text{background:#0a1020;border:1px solid var(--border);border-radius:10px;padding:14px;font-size:13px;line-height:1.7;color:#c8d8e8;font-family:'DM Mono',monospace;margin-bottom:12px;white-space:pre-wrap;word-break:break-word}
+.nq-share-btns{display:flex;gap:10px;flex-wrap:wrap}
+.nq-share-btn{flex:1;min-width:120px;padding:11px 16px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;cursor:pointer;transition:all .2s;text-align:center;letter-spacing:1px}
+.nq-share-btn:hover{border-color:var(--accent);background:rgba(0,229,160,.08);color:var(--accent)}
+.nq-share-btn.nq-copied{border-color:var(--accent);background:rgba(0,229,160,.15);color:var(--accent)}
+
+/* AI ANALYSIS */
+.nq-ai-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px}
+.nq-ai-loading{display:flex;align-items:center;gap:12px;padding:16px 0;color:var(--muted);font-size:13px;font-family:'DM Mono',monospace}
+.nq-spinner{width:20px;height:20px;border:2px solid var(--border);border-top:2px solid var(--accent);border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.nq-ai-content{font-size:14px;line-height:1.75;color:#c8d8e8;display:none}
+.nq-ai-content h3{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;margin:16px 0 8px;display:flex;align-items:center;gap:6px}
+.nq-ai-content h3:first-child{margin-top:0}
+.nq-ai-content h3.green{color:var(--correct)}
+.nq-ai-content h3.red{color:var(--wrong)}
+.nq-ai-content h3.yellow{color:var(--accent3)}
+.nq-ai-content h3.purple{color:var(--accent4)}
+.nq-ai-content ul{list-style:none;padding:0}
+.nq-ai-content ul li{padding:6px 0 6px 16px;border-left:2px solid var(--border);margin-bottom:4px;font-size:13px;color:#a8b8d0}
+.nq-ai-content ul li strong{color:var(--text)}
+.nq-ai-content .nq-topic-chip{display:inline-block;background:rgba(129,140,248,.1);border:1px solid var(--accent4);color:var(--accent4);font-family:'DM Mono',monospace;font-size:11px;padding:3px 10px;border-radius:20px;margin:3px 3px 3px 0;letter-spacing:1px}
+.nq-ai-content .nq-topic-chip.green{background:rgba(0,229,160,.1);border-color:var(--correct);color:var(--correct)}
+.nq-ai-content .nq-topic-chip.yellow{background:rgba(255,209,102,.1);border-color:var(--accent3);color:var(--accent3)}
+.nq-ai-error{color:var(--wrong);font-size:13px;padding:12px;background:rgba(255,107,107,.08);border-radius:8px;font-family:'DM Mono',monospace}
+
+/* HISTORY */
+.nq-history-section{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:16px}
+.nq-hist-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.nq-hist-item:last-child{border-bottom:none}
+.nq-hist-date{font-size:11px;color:var(--muted);font-family:'DM Mono',monospace}
+.nq-hist-score{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--accent)}
+.nq-hist-meta{font-size:11px;color:var(--muted)}
+
+/* ACTION BUTTONS */
+.nq-action-btns{display:flex;gap:10px;flex-wrap:wrap}
+.nq-btn-restart{flex:1;min-width:140px;background:linear-gradient(135deg,var(--accent),#00b37a);color:#000;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;padding:14px;border-radius:50px;border:none;cursor:pointer;transition:transform .2s}
+.nq-btn-restart:hover{transform:scale(1.03)}
+.nq-btn-change{flex:1;min-width:140px;background:transparent;color:var(--muted);font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;padding:14px;border-radius:50px;border:1px solid var(--border);cursor:pointer;transition:all .2s}
+.nq-btn-change:hover{border-color:var(--accent);color:var(--accent)}
+</style>
+</head>
+<body>
+
+<!-- WELCOME SCREEN -->
+<div id="nq-welcome">
+  <div class="nq-logo">NEET <span>QUIZ</span></div>
+  <div class="nq-tagline">Reproduction in Flowering Plants</div>
+  <div class="nq-welcome-card" id="nq-welcome-card">
+    <h2>&#128100; Who's Taking This Quiz?</h2>
+    <p>Enter your name so we can track your progress, remember your scores, and give you personalised feedback!</p>
+    <div class="nq-input-wrap">
+      <label>Your Name</label>
+      <input class="nq-input" id="nq-name-input" type="text" placeholder="e.g. Shivam" maxlength="30" autocomplete="off">
+    </div>
+    <button class="nq-btn-start" onclick="nqStart()">START QUIZ &rarr;</button>
+    <div class="nq-returning" id="nq-returning" style="display:none">
+      Welcome back! <span onclick="nqClearUser()">Not you? Change name</span>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ SCREEN -->
+<div id="nq-quiz">
+  <div class="nq-topbar">
+    <div class="nq-tb-name" id="nq-tb-name"></div>
+    <div class="nq-tb-progress"><div class="nq-tb-fill" id="nq-tb-fill"></div></div>
+    <div class="nq-tb-count" id="nq-tb-count">0/25</div>
+  </div>
+  <div class="nq-quiz-header">
+    <h1>Reproduction in <span>Flowering Plants</span></h1>
+    <div class="nq-quiz-sub">25 Questions &middot; Biology Ch.2 &middot; Class 12 &middot; NEET Level</div>
+  </div>
+  <div class="nq-marking-bar">
+    <div class="nq-mk"><div class="nq-mk-dot" style="background:var(--correct)"></div> +4 Correct</div>
+    <div class="nq-mk"><div class="nq-mk-dot" style="background:var(--wrong)"></div> &minus;1 Wrong</div>
+    <div class="nq-mk"><div class="nq-mk-dot" style="background:var(--accent3)"></div> 0 Skip</div>
+  </div>
+  <div class="nq-main" id="nq-container"></div>
+  <div class="nq-submit-float" id="nq-submit-float">
+    <div class="nq-submit-inner">
+      <div class="nq-live-score" id="nq-live-score">Score: 0</div>
+      <button class="nq-btn-submit" onclick="nqSubmit()">VIEW RESULTS &rarr;</button>
+    </div>
+    <div class="nq-mk-note">All 25 answered &mdash; Click to see your full analysis</div>
+  </div>
+</div>
+
+<!-- RESULT SCREEN -->
+<div id="nq-result">
+  <div class="nq-result-hero">
+    <div class="nq-res-greeting">Your Score</div>
+    <div class="nq-res-name" id="nq-res-name"></div>
+    <div class="nq-res-score" id="nq-res-score">0</div>
+    <div class="nq-res-outof">OUT OF 100 &mdash; NEET MARKS</div>
+    <div class="nq-res-grid">
+      <div class="nq-res-item"><span class="nq-res-val nq-vc" id="nq-rc">0</span><span class="nq-res-lbl">CORRECT</span></div>
+      <div class="nq-res-item"><span class="nq-res-val nq-vw" id="nq-rw">0</span><span class="nq-res-lbl">WRONG</span></div>
+      <div class="nq-res-item"><span class="nq-res-val nq-vs" id="nq-rs">0</span><span class="nq-res-lbl">SKIPPED</span></div>
+    </div>
+    <div class="nq-accuracy" id="nq-accuracy"></div>
+  </div>
+
+  <!-- SHARE -->
+  <div class="nq-share-section">
+    <div class="nq-section-title">&#128279; Share Your Result</div>
+    <div class="nq-share-text" id="nq-share-text"></div>
+    <div class="nq-share-btns">
+      <button class="nq-share-btn" onclick="nqCopy()" id="nq-copy-btn">&#128203; Copy</button>
+      <button class="nq-share-btn" onclick="nqWhatsApp()">&#128241; WhatsApp</button>
+      <button class="nq-share-btn" onclick="nqTelegram()">&#9992; Telegram</button>
+    </div>
+  </div>
+
+  <!-- AI ANALYSIS -->
+  <div class="nq-ai-section">
+    <div class="nq-section-title">&#129302; AI Analysis & Study Guide</div>
+    <div class="nq-ai-loading" id="nq-ai-loading">
+      <div class="nq-spinner"></div>
+      <span>Analysing your performance...</span>
+    </div>
+    <div class="nq-ai-content" id="nq-ai-content"></div>
+    <div class="nq-ai-error" id="nq-ai-error" style="display:none"></div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="nq-history-section" id="nq-history-section">
+    <div class="nq-section-title">&#128200; Your Attempt History</div>
+    <div id="nq-history-list"></div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="nq-action-btns">
+    <button class="nq-btn-restart" onclick="nqRestart()">&#8634; Try Again</button>
+    <button class="nq-btn-change" onclick="nqChangeUser()">&#128100; Change Name</button>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {q:"Who is known as the 'Father of Plant Embryology' (Indian)?",opts:["G.S. Puri","P. Maheshwari","B.P. Pal","K.C. Mehta"],ans:1,tag:"pyq",topic:"Intro & Terminology",exp:"<strong>P. Maheshwari</strong> — Father of Indian Plant Embryology. Known for pioneering work in angiosperm embryology and in-vitro fertilisation."},
+  {q:"What is the term for the study of flowers?",opts:["Floriculture","Anthology","Anthesis","Phytology"],ans:1,tag:"concept",topic:"Intro & Terminology",exp:"<strong>Anthology</strong> = study of flowers. Floriculture = cultivation. Anthesis = opening of floral bud. All three are NEET traps!"},
+  {q:"The culture (cultivation) of flowers is called:",opts:["Anthology","Anthesis","Floriculture","Horticulture"],ans:2,tag:"concept",topic:"Intro & Terminology",exp:"<strong>Floriculture</strong> = cultivation of flowers. Classic NEET confusion with Anthology."},
+  {q:"The opening of a floral bud along with anther dehiscence is termed:",opts:["Floriculture","Anthology","Anthesis","Sporogenesis"],ans:2,tag:"pyq",topic:"Intro & Terminology",exp:"<strong>Anthesis</strong> = opening of the floral bud + anther dehiscence. Directly tested in NEET PYQs."},
+  {q:"Which whorls are directly involved in reproduction (essential whorls)?",opts:["Calyx and Corolla","Androecium and Gynoecium","Sepals and Petals","Calyx and Androecium"],ans:1,tag:"pyq",topic:"Flower Structure",exp:"<strong>Androecium</strong> (male) + <strong>Gynoecium</strong> (female) = essential whorls. Calyx and Corolla are non-essential."},
+  {q:"Calyx and Corolla are classified as:",opts:["Essential whorls","Reproductive whorls","Non-essential (accessory) whorls","Fertile whorls"],ans:2,tag:"concept",topic:"Flower Structure",exp:"<strong>Non-essential whorls.</strong> Calyx protects bud; Corolla attracts pollinators. Neither directly produces gametes."},
+  {q:"Which hormone drives differentiation of shoot meristem into floral parts?",opts:["Cytokinin","Gibberellin","Auxin","Abscisic acid"],ans:2,tag:"tricky",topic:"Flower Development",exp:"<strong>Auxin</strong> causes hormonal change leading to floral differentiation. Key hormone specifically noted in your chapter."},
+  {q:"Correct sequence of flower development from shoot meristem?",opts:["Shoot meristem → Floral primordium → Inflorescence meristem → Floral bud → Floral parts","Shoot meristem → Differentiation → Floral primordium → Inflorescence meristem → Floral parts","Inflorescence meristem → Floral primordium → Shoot meristem → Floral bud","Floral primordium → Shoot meristem → Hormonal change → Inflorescence meristem"],ans:0,tag:"concept",topic:"Flower Development",exp:"<strong>Shoot meristem → Floral Primordium → Inflorescence Meristem → Floral Bud → Differentiation → Floral Parts.</strong>"},
+  {q:"Select the INCORRECT pre-fertilisation event:",opts:["Sporogenesis","Gametogenesis","Embryogenesis","Pollination"],ans:2,tag:"tricky",topic:"Pre-Fertilisation Events",exp:"<strong>Embryogenesis is POST-fertilisation.</strong> Pre-fertilisation: Sporogenesis, Gametogenesis, Pollination, Pollen-Pistil Interaction."},
+  {q:"Correct pair of pre-fertilisation events:",opts:["Sporogenesis and Embryogenesis","Sporogenesis and Gametogenesis","Embryogenesis and Seed development","Fruit development and Fertilisation"],ans:1,tag:"pyq",topic:"Pre-Fertilisation Events",exp:"<strong>Sporogenesis + Gametogenesis</strong> are both pre-fertilisation. Embryogenesis, seed/fruit development are post-fertilisation."},
+  {q:"Sporogenesis refers to:",opts:["Formation of gametes","Formation of spores (micro + mega)","Formation of seeds","Formation of embryo"],ans:1,tag:"concept",topic:"Sporogenesis",exp:"<strong>Sporogenesis</strong> = formation of spores. Includes Microsporogenesis (pollen) + Megasporogenesis (megaspore)."},
+  {q:"Formation of pollen grains from pollen mother cells by meiosis is called:",opts:["Megasporogenesis","Gametogenesis","Microsporogenesis","Spermatogenesis"],ans:2,tag:"pyq",topic:"Sporogenesis",exp:"<strong>Microsporogenesis</strong> = pollen formation from MMC by meiosis inside anther locules."},
+  {q:"Formation of megaspore from the megaspore mother cell is:",opts:["Microsporogenesis","Gametogenesis","Megasporogenesis","Embryogenesis"],ans:2,tag:"concept",topic:"Sporogenesis",exp:"<strong>Megasporogenesis</strong> = megaspore formation from MMC by meiosis inside ovule. Functional megaspore → embryo sac."},
+  {q:"Gametogenesis in flowering plants means:",opts:["Formation of spores","Formation of gametes from spores","Fusion of gametes","Development of seed"],ans:1,tag:"concept",topic:"Gametogenesis",exp:"<strong>Gametogenesis</strong> = formation of gametes from spores. Follows sporogenesis; pre-fertilisation event."},
+  {q:"Pollen-Pistil Interaction is a direct consequence of:",opts:["Fertilisation","Pollination","Embryogenesis","Gametogenesis"],ans:1,tag:"pyq",topic:"Pollination",exp:"After <strong>Pollination</strong>, Pollen-Pistil Interaction begins — recognition, pollen tube germination, growth toward ovule."},
+  {q:"Double fertilisation is a unique feature of:",opts:["Gymnosperms","Pteridophytes","Angiosperms","Bryophytes"],ans:2,tag:"pyq",topic:"Fertilisation",exp:"<strong>Angiosperms</strong> — double fertilisation (Nawaschin, 1898). Syngamy → zygote; Triple fusion → PEN."},
+  {q:"Which event occurs AFTER fertilisation?",opts:["Sporogenesis","Gametogenesis","Pollination","Embryogenesis"],ans:3,tag:"concept",topic:"Post-Fertilisation Events",exp:"<strong>Embryogenesis</strong> is post-fertilisation. Zygote → mitosis → embryo → fruit and seed development."},
+  {q:"The Inflorescence Meristem is initiated by:",opts:["Megaspore mother cell","Floral primordium","Axillary bud directly","Gynoecium"],ans:1,tag:"concept",topic:"Flower Development",exp:"<strong>Floral Primordium</strong> initiates it. Path: Axillary meristem → Floral Primordium → Inflorescence Meristem → Floral Bud."},
+  {q:"Which statement about pollination is CORRECT?",opts:["Pollination = fusion of gametes","Pollination = transfer of pollen from anther to stigma","Pollination directly produces seeds","Pollination only occurs by insects"],ans:1,tag:"pyq",topic:"Pollination",exp:"<strong>Pollination</strong> = pollen transfer from anther to stigma. NOT fertilisation. Pre-fertilisation event."},
+  {q:"Correct order of ALL events in angiosperm reproduction:",opts:["Gametogenesis → Sporogenesis → Pollination → Fertilisation","Sporogenesis → Gametogenesis → Pollination → Fertilisation → Embryogenesis","Pollination → Sporogenesis → Fertilisation → Embryogenesis","Fertilisation → Sporogenesis → Gametogenesis → Seed development"],ans:1,tag:"tricky",topic:"Pre-Fertilisation Events",exp:"<strong>Sporogenesis → Gametogenesis → Pollination → Pollen-Pistil Interaction → Fertilisation → Embryogenesis → Fruit & Seed.</strong>"},
+  {q:"Axillary bud in flower development is equivalent to:",opts:["Floral primordium","Shoot meristem","Inflorescence meristem","Floral bud"],ans:1,tag:"tricky",topic:"Flower Development",exp:"<strong>Axillary Bud = Shoot Meristem.</strong> Starting point. Auxin → floral primordium → inflorescence meristem → floral parts."},
+  {q:"Fruit and seed development are examples of:",opts:["Pre-fertilisation events","Post-fertilisation events","Sporogenesis","Gametogenesis"],ans:1,tag:"concept",topic:"Post-Fertilisation Events",exp:"<strong>Post-fertilisation events:</strong> Embryogenesis, Fruit development, Seed development."},
+  {q:"'Anthology' vs 'Anthesis' — correct combination:",opts:["Anthology = opening of bud; Anthesis = study of flowers","Anthology = study of flowers; Anthesis = opening of floral bud","Both mean study of flowers","Both refer to pollen formation"],ans:1,tag:"tricky",topic:"Intro & Terminology",exp:"<strong>Anthology = study of flowers. Anthesis = opening of floral bud.</strong> Most common NEET confusion from this chapter."},
+  {q:"Why are Calyx and Corolla called 'non-essential' whorls?",opts:["They produce gametes indirectly","They do not directly participate in the reproductive process","They are absent in all flowers","They are sterile and non-functional"],ans:1,tag:"applied",topic:"Flower Structure",exp:"<strong>Calyx + Corolla</strong> are non-essential — no direct role in gamete production or fertilisation."},
+  {q:"Hormonal + structural changes during flower development lead to formation of:",opts:["Only pollen grains","Only seeds","All floral parts (essential + non-essential)","Only gynoecium"],ans:2,tag:"applied",topic:"Flower Development",exp:"Both <strong>Auxin (hormonal)</strong> and <strong>structural change</strong> produce ALL floral parts — Androecium, Gynoecium, Calyx, Corolla."}
+];
+
+const TOPIC_ADDITIONS = [
+  "Stamen & Anther Structure (microsporangium, pollen wall layers)",
+  "Pollen Grain Development & Male Gametophyte",
+  "Ovule Structure (funicle, hilum, integuments, nucellus, chalaza)",
+  "Female Gametophyte / Embryo Sac (Polygonum type — 7-celled, 8-nucleated)",
+  "Types of Pollination (autogamy, geitonogamy, xenogamy)",
+  "Outbreeding Devices (self-incompatibility, dicliny, dichogamy)",
+  "Pollen-Pistil Interaction (recognition, pollen tube growth)",
+  "Double Fertilisation in detail (syngamy + triple fusion)",
+  "Endosperm Development (nuclear, cellular, helobial types)",
+  "Embryo Development (dicot: globular → heart → torpedo stage)",
+  "Seed Structure & Dormancy",
+  "Apomixis & Polyembryony",
+  "Parthenocarpy (seedless fruit formation)"
+];
+
+let userName = '', userAnswers = [], quizDone = 0;
+
+// ── localStorage helpers ──
+function lsGet(k){ try{ return localStorage.getItem(k) }catch(e){ return null } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v) }catch(e){} }
+function lsRemove(k){ try{ localStorage.removeItem(k) }catch(e){} }
+
+// ── Init welcome screen ──
+(function(){
+  const saved = lsGet('nq_name');
+  if(saved){
+    userName = saved;
+    document.getElementById('nq-name-input').value = saved;
+    document.getElementById('nq-returning').style.display = 'block';
+    document.getElementById('nq-returning').innerHTML = 'Welcome back, <strong style="color:var(--accent)">' + saved + '</strong>! &nbsp;<span onclick="nqClearUser()">Not you?</span>';
+    showHistory('nq-welcome-card-hist', false);
+  }
+})();
+
+function nqStart(){
+  const inp = document.getElementById('nq-name-input').value.trim();
+  if(!inp){ alert('Please enter your name!'); return; }
+  userName = inp;
+  lsSet('nq_name', userName);
+  userAnswers = new Array(QUESTIONS.length).fill(null);
+  quizDone = 0;
+  document.getElementById('nq-welcome').style.display = 'none';
+  document.getElementById('nq-quiz').style.display = 'block';
+  document.getElementById('nq-tb-name').textContent = userName;
+  buildQuiz();
+  window.scrollTo(0,0);
+}
+
+function nqClearUser(){
+  lsRemove('nq_name');
+  userName = '';
+  document.getElementById('nq-name-input').value = '';
+  document.getElementById('nq-returning').style.display = 'none';
+}
+
+function nqChangeUser(){
+  lsRemove('nq_name');
+  document.getElementById('nq-result').style.display = 'none';
+  document.getElementById('nq-quiz').style.display = 'none';
+  document.getElementById('nq-welcome').style.display = 'flex';
+  document.getElementById('nq-name-input').value = '';
+  document.getElementById('nq-returning').style.display = 'none';
+  window.scrollTo(0,0);
+}
+
+// ── Build Quiz ──
+const TAG_CLS = {pyq:'nq-tag-pyq',concept:'nq-tag-concept',applied:'nq-tag-applied',tricky:'nq-tag-tricky'};
+const TAG_LBL = {pyq:'&#11088; PYQ',concept:'&#128214; CONCEPT',applied:'&#128300; APPLIED',tricky:'&#9889; TRICKY'};
+
+function buildQuiz(){
+  const c = document.getElementById('nq-container');
+  c.innerHTML = '';
+  QUESTIONS.forEach(function(q,i){
+    const d = document.createElement('div');
+    d.className = 'nq-card'; d.id = 'nq-card-'+i;
+    const opts = ['A','B','C','D'].map(function(k,j){
+      return '<button class="nq-opt" id="nq-opt-'+i+'-'+j+'" onclick="pick('+i+','+j+')">'
+        +'<span class="nq-optkey">'+k+'</span><span>'+q.opts[j]+'</span></button>';
+    }).join('');
+    d.innerHTML = '<div class="nq-meta"><span class="nq-qnum">Q'+String(i+1).padStart(2,'0')+'</span>'
+      +'<span class="nq-tag '+TAG_CLS[q.tag]+'">'+TAG_LBL[q.tag]+'</span>'
+      +'<span class="nq-tag" style="color:var(--muted);border-color:var(--border);background:transparent;font-size:9px">'+q.topic+'</span></div>'
+      +'<span class="nq-qtext">'+q.q+'</span>'
+      +'<div class="nq-options">'+opts+'</div>'
+      +'<div class="nq-exp" id="nq-exp-'+i+'">'+q.exp+'</div>';
+    c.appendChild(d);
+  });
+  updProgress();
+}
+
+function pick(qi, oi){
+  if(userAnswers[qi] !== null) return;
+  userAnswers[qi] = oi;
+  const q = QUESTIONS[qi];
+  const card = document.getElementById('nq-card-'+qi);
+  const exp = document.getElementById('nq-exp-'+qi);
+  for(let j=0;j<4;j++){
+    const b = document.getElementById('nq-opt-'+qi+'-'+j);
+    if(b) b.setAttribute('disabled','true');
+  }
+  document.getElementById('nq-opt-'+qi+'-'+q.ans).classList.add('nq-opt-correct');
+  if(oi === q.ans){ card.classList.add('nq-correct'); }
+  else { document.getElementById('nq-opt-'+qi+'-'+oi).classList.add('nq-opt-wrong'); card.classList.add('nq-wrong'); }
+  exp.classList.add('nq-show');
+  quizDone++;
+  updProgress();
+  if(quizDone === QUESTIONS.length){
+    document.getElementById('nq-submit-float').classList.add('nq-vis');
+    document.getElementById('nq-live-score').textContent = 'Score: ' + calcScore();
+  }
+}
+
+function updProgress(){
+  const pct = (quizDone/QUESTIONS.length*100)+'%';
+  document.getElementById('nq-tb-fill').style.width = pct;
+  document.getElementById('nq-tb-count').textContent = quizDone+'/'+QUESTIONS.length;
+}
+
+function calcScore(){
+  let s=0;
+  userAnswers.forEach(function(a,i){ if(a===null)return; if(a===QUESTIONS[i].ans)s+=4; else s-=1; });
+  return s;
+}
+
+// ── Submit & Results ──
+function nqSubmit(){
+  let correct=0,wrong=0,skip=0,score=0;
+  const wrongTopics={}, correctTopics={};
+  userAnswers.forEach(function(a,i){
+    const q = QUESTIONS[i];
+    if(a===null){ skip++; }
+    else if(a===q.ans){ correct++; score+=4; correctTopics[q.topic]=(correctTopics[q.topic]||0)+1; }
+    else { wrong++; score-=1; wrongTopics[q.topic]=(wrongTopics[q.topic]||0)+1; }
+  });
+
+  // Save to history
+  const history = JSON.parse(lsGet('nq_history_'+userName)||'[]');
+  history.unshift({date:new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'}),score,correct,wrong,skip});
+  if(history.length>5) history.pop();
+  lsSet('nq_history_'+userName, JSON.stringify(history));
+
+  // Populate result screen
+  document.getElementById('nq-res-name').textContent = userName;
+  document.getElementById('nq-res-score').textContent = score;
+  document.getElementById('nq-rc').textContent = correct;
+  document.getElementById('nq-rw').textContent = wrong;
+  document.getElementById('nq-rs').textContent = skip;
+  const acc = correct>0 ? Math.round(correct/(correct+wrong)*100) : 0;
+  document.getElementById('nq-accuracy').textContent = 'Accuracy: '+acc+'% | Attempted: '+(correct+wrong)+'/25';
+
+  // Share text
+  const emoji = score>=80?'🏆':score>=60?'🔥':score>=40?'📚':'💪';
+  const shareText = emoji+' NEET Quiz Result\n'
+    +'Chapter: Reproduction in Flowering Plants\n'
+    +'Student: '+userName+'\n'
+    +'Score: '+score+'/100 (NEET Marks)\n'
+    +'Correct: '+correct+' | Wrong: '+wrong+' | Skipped: '+skip+'\n'
+    +'Accuracy: '+acc+'%\n\n'
+    +'Think you can beat me? Try the quiz at [your blog link here] 🌿';
+  document.getElementById('nq-share-text').textContent = shareText;
+
+  // Show history
+  showHistory('nq-history-list', true);
+
+  // Switch screens
+  document.getElementById('nq-quiz').style.display = 'none';
+  document.getElementById('nq-submit-float').classList.remove('nq-vis');
+  document.getElementById('nq-result').style.display = 'block';
+  window.scrollTo(0,0);
+
+  // Fetch AI analysis
+  fetchAIAnalysis(score, correct, wrong, skip, wrongTopics, correctTopics, history);
+}
+
+// ── AI Analysis via Anthropic API ──
+async function fetchAIAnalysis(score, correct, wrong, skip, wrongTopics, correctTopics, history){
+  const loading = document.getElementById('nq-ai-loading');
+  const content = document.getElementById('nq-ai-content');
+  const errDiv = document.getElementById('nq-ai-error');
+
+  // Build wrong questions detail
+  const wrongQs = [];
+  userAnswers.forEach(function(a,i){
+    if(a !== null && a !== QUESTIONS[i].ans){
+      wrongQs.push('Q'+(i+1)+': '+QUESTIONS[i].q+' (Topic: '+QUESTIONS[i].topic+')');
+    }
+  });
+
+  const prompt = `You are a NEET Biology expert mentor. A student named ${userName} just completed a quiz on "Reproduction in Flowering Plants" (Class 12, NEET).
+
+QUIZ RESULTS:
+- Score: ${score}/100 (NEET marking: +4 correct, -1 wrong)
+- Correct: ${correct}/25 | Wrong: ${wrong}/25 | Skipped: ${skip}/25
+- Accuracy: ${correct>0?Math.round(correct/(correct+wrong)*100):0}%
+- Past attempts: ${history.length > 1 ? history.slice(1).map(h=>'Score '+h.score).join(', ') : 'First attempt'}
+
+TOPICS WHERE MISTAKES WERE MADE:
+${Object.keys(wrongTopics).length > 0 ? Object.entries(wrongTopics).map(([t,c])=>`- ${t}: ${c} mistake(s)`).join('\n') : 'None'}
+
+TOPICS ANSWERED CORRECTLY:
+${Object.keys(correctTopics).map(t=>`- ${t}`).join('\n')}
+
+WRONG QUESTIONS:
+${wrongQs.length > 0 ? wrongQs.join('\n') : 'None'}
+
+IMPORTANT TOPICS NOT YET IN THIS QUIZ (to be studied next):
+${TOPIC_ADDITIONS.join('\n')}
+
+Give a warm, motivating, personalised response for a NEET 2027 aspirant. Structure your response using EXACTLY these HTML sections (use the exact h3 tags and classes shown):
+
+<h3 class="green">&#127881; Performance Summary</h3>
+[2-3 lines personal assessment of their score. Be honest but encouraging.]
+
+<h3 class="red">&#128683; Weak Areas to Revise</h3>
+[List weak topics as <ul><li> items with specific what-to-study tips. If no mistakes, say so warmly.]
+
+<h3 class="green">&#9989; Strong Areas</h3>
+[List strong topics as chips: <span class="nq-topic-chip green">Topic Name</span>]
+
+<h3 class="yellow">&#128218; What to Study Next</h3>
+[List the most important missing topics from the quiz as chips: <span class="nq-topic-chip yellow">Topic</span> — pick the top 5-6 most NEET-relevant ones from the list provided]
+
+<h3 class="purple">&#128161; Topics to Add to This Blog Post</h3>
+[Suggest 4-5 specific topics from the additions list that would make excellent quiz questions for the next post, formatted as <span class="nq-topic-chip">Topic</span>]
+
+<h3 class="yellow">&#127919; NEET 2027 Strategy Tip</h3>
+[1 specific, actionable advice based on their performance pattern]
+
+Keep the tone warm, like a senior NEET mentor talking to a junior. Use the student's name (${userName}) at least once.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content && data.content[0] && data.content[0].text ? data.content[0].text : '';
+    if(!text) throw new Error('No response');
+    loading.style.display = 'none';
+    content.innerHTML = text;
+    content.style.display = 'block';
+  } catch(e) {
+    loading.style.display = 'none';
+    errDiv.style.display = 'block';
+    errDiv.textContent = 'Could not load AI analysis. Check your internet and try again.';
+  }
+}
+
+// ── History ──
+function showHistory(containerId, full){
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  const history = JSON.parse(lsGet('nq_history_'+userName)||'[]');
+  if(history.length === 0){ el.innerHTML = '<div style="color:var(--muted);font-size:13px;font-family:DM Mono,monospace">No attempts yet.</div>'; return; }
+  el.innerHTML = history.map(function(h,i){
+    return '<div class="nq-hist-item">'
+      +'<div><div style="font-weight:600;font-size:14px">'+(i===0&&full?'Latest':'Attempt '+(history.length-i))+'</div>'
+      +'<div class="nq-hist-date">'+h.date+'</div></div>'
+      +'<div style="text-align:right"><div class="nq-hist-score">'+h.score+'/100</div>'
+      +'<div class="nq-hist-meta">'+h.correct+' correct · '+h.wrong+' wrong</div></div></div>';
+  }).join('');
+}
+
+// ── Share ──
+function nqCopy(){
+  const txt = document.getElementById('nq-share-text').textContent;
+  if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(function(){ const b=document.getElementById('nq-copy-btn'); b.textContent='✓ Copied!'; b.classList.add('nq-copied'); setTimeout(function(){ b.textContent='📋 Copy'; b.classList.remove('nq-copied'); },2000); }); }
+  else{ const ta=document.createElement('textarea'); ta.value=txt; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
+}
+function nqWhatsApp(){
+  const txt = encodeURIComponent(document.getElementById('nq-share-text').textContent);
+  window.open('https://wa.me/?text='+txt,'_blank');
+}
+function nqTelegram(){
+  const txt = encodeURIComponent(document.getElementById('nq-share-text').textContent);
+  window.open('https://t.me/share/url?text='+txt,'_blank');
+}
+
+// ── Restart ──
+function nqRestart(){
+  userAnswers = new Array(QUESTIONS.length).fill(null);
+  quizDone = 0;
+  document.getElementById('nq-result').style.display = 'none';
+  document.getElementById('nq-quiz').style.display = 'block';
+  document.getElementById('nq-ai-content').style.display = 'none';
+  document.getElementById('nq-ai-content').innerHTML = '';
+  document.getElementById('nq-ai-loading').style.display = 'flex';
+  document.getElementById('nq-ai-error').style.display = 'none';
+  buildQuiz();
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
